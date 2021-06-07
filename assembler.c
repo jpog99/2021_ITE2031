@@ -116,13 +116,13 @@ int main(int argc, char *argv[]){
 				op_code = OP_NOR;
 
 			regA = atoi(arg0) << 19; //push arg0 to bit 21-19 (regA)
-			regA = atoi(arg1) << 16; //push arg0 to bit 18-16 (regB)
+			regB = atoi(arg1) << 16; //push arg0 to bit 18-16 (regB)
 			offset = atoi(arg2);     //dest reg
 				
 			mach_code = regA | regB | offset;
 		}
 				
-			//I-Type
+		//I-Type
 		else if (!strcmp(opcode, "lw") || !strcmp(opcode, "sw") || !strcmp(opcode, "beq")) {
 			if (!(isNumber(arg0) && isNumber(arg1)) || !strcmp(arg2,"")) {
 				printf("error: invalid argument of I-Type: line %d.\n",idx);	
@@ -137,13 +137,18 @@ int main(int argc, char *argv[]){
 				op_code = OP_BEQ;
 					
 			regA = atoi(arg0) << 19; //push arg0 to bit 21-19 (regA)
-			regA = atoi(arg1) << 16; //push arg0 to bit 18-16 (regB)	
+			regB = atoi(arg1) << 16; //push arg0 to bit 18-16 (regB)	
 				
 			//numeric address for lw,sw
 			if(isNumber(arg2)){
 				offset = atoi(arg2);
+				//check offset range
+				if (offset < -32768 || offset > 32767) {
+					printf("error: invalid offsetField range\n");
+					exit(1);
+				}
 			}
-			//symbolic address
+			//arg2 is not number (jump label for beq)
 			else{
 				if ((offset = findLabel(arg2,line_cnt)) == -1){
 					printf("error: label not found for beq:%s : line %d\n",arg2,idx);
@@ -151,11 +156,6 @@ int main(int argc, char *argv[]){
 				}
 				if (op_code == OP_BEQ)
 					offset -= (idx+1);
-			}
-			//check offset range
-				if (offset < -32768 || offset > 32767) {
-					printf("error: invalid offsetField range : %d : line %d\n",offset,idx);
-					exit(1);
 				}
 			
 			//take last 16 bits for offset
@@ -164,6 +164,7 @@ int main(int argc, char *argv[]){
 					
 			mach_code = regA | regB | offset;
 		}
+
 				
 			//J-Type
 		else if (!strcmp(opcode, "jalr")) {
@@ -174,7 +175,7 @@ int main(int argc, char *argv[]){
 					
 			op_code = OP_JALR;
 			regA = atoi(arg0) << 19; //push arg0 to bit 21-19 (regA)
-			regA = atoi(arg1) << 16; //push arg0 to bit 18-16 (regB)	
+			regB = atoi(arg1) << 16; //push arg0 to bit 18-16 (regB)	
 					
 			mach_code = regA | regB;
 		}
@@ -187,6 +188,7 @@ int main(int argc, char *argv[]){
 				op_code = OP_NOOP;
 		}
 			
+		//.fill
 		else if (!strcmp(opcode, ".fill")) {
 			if(!strcmp(arg0,"")){
 				printf("error: invalid argument of O-Type: line %d.\n",idx);	
@@ -197,7 +199,7 @@ int main(int argc, char *argv[]){
 				mach_code = atoi(arg0);
 					
 			else{
-				if ((offset = findLabel(arg0,line_cnt)) == -1){
+				if ((mach_code = findLabel(arg0,line_cnt)) == -1){
 					printf("error: label not found for .fill:%s\n",arg0);
 					exit(1);
 				}
