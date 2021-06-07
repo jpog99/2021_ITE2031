@@ -46,11 +46,6 @@ int main(int argc, char *argv[]){
 		printf("memory[%d]=%d\n", state.numMemory, state.mem[state.numMemory]);
 	}
 	
-	if (!flag) { // error files in assembly
-		printf("error in reading address %d\n", state.numMemory);
-    	exit(1);
-	}
-	
 	//start with pc = 0
 	state.pc = 0;
 	//allocate registers to 0
@@ -61,9 +56,9 @@ int main(int argc, char *argv[]){
 	int regA, regB, destReg, offset, addr;		
 	
 	while (state.pc > MAXLINELENGTH || *(state.mem) > NUMMEMORY){
-		regA = regB = destReg = offset = addr = 0; //clear variables
+		//regA = regB = destReg = offset = addr = 0; //clear variables
 		int inst = state.mem[state.pc]; //fetch decimal inst from memory
-		int opcode = inst & OPCODE_MASK;
+		int opcode = inst >>22;
 		
 		printState(&state); 
 		
@@ -124,6 +119,9 @@ int main(int argc, char *argv[]){
 				break;
 			}
 			
+			if(halted)
+				break;
+
 			state.pc++;
 			inst_count++;
 		}
@@ -165,3 +163,4 @@ int convertNum(int num)
 	}
 	return(num);
 }
+
