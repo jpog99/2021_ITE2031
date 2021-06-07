@@ -55,8 +55,7 @@ int main(int argc, char *argv[]){
 	int inst_count = 0;
 	int regA, regB, destReg, offset, addr;		
 	
-	while (state.pc > MAXLINELENGTH || *(state.mem) > NUMMEMORY){
-		//regA = regB = destReg = offset = addr = 0; //clear variables
+	while (!halted){
 		int inst = state.mem[state.pc]; //fetch decimal inst from memory
 		int opcode = inst >>22;
 		
@@ -108,6 +107,7 @@ int main(int argc, char *argv[]){
 			case 6:
 				//Increment the PC (as with all instructions), then halt the machine.
 				state.pc++;
+				inst_count++;
 				halted = 1;
 				break;
 				
