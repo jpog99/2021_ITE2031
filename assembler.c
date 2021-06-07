@@ -140,27 +140,26 @@ int main(int argc, char *argv[]){
 			regA = atoi(arg1) << 16; //push arg0 to bit 18-16 (regB)	
 				
 			//numeric address for lw,sw
-			printf("%s | %s | %s | %s\n", opcode, arg0, arg1, arg2); //debug
 			if(isNumber(arg2)){
 				offset = atoi(arg2);
-				//check offset range
-				if (offset < -32768 || offset > 32767) {
-					printf("error: invalid offsetField range\n");
-					exit(1);
-				}
 			}
-			//arg2 is not number (jump label for beq)
+			//symbolic address
 			else{
 				if ((offset = findLabel(arg2,line_cnt)) == -1){
 					printf("error: label not found for beq:%s : line %d\n",arg2,idx);
 					exit(1);
 				}
-				if (op_code = OP_BEQ)
-					offset -= (idx-1);
+				if (op_code == OP_BEQ)
+					offset -= (idx+1);
+			}
+			//check offset range
+				if (offset < -32768 || offset > 32767) {
+					printf("error: invalid offsetField range : %d : line %d\n",offset,idx);
+					exit(1);
 				}
 			
 			//take last 16 bits for offset
-			if (op_code = OP_BEQ)
+			if (op_code == OP_BEQ)
 				offset &= 0x0000FFFF;
 					
 			mach_code = regA | regB | offset;
@@ -272,3 +271,4 @@ int isNumber(char *string)
 	int i;
 	return( (sscanf(string, "%d", &i)) == 1);
 }
+
