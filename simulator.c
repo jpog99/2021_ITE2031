@@ -48,7 +48,7 @@ int main(int argc, char *argv[]){
 	
 	//start with pc = 0
 	state.pc = 0;
-	//allocate registers to 0
+	//initialize all registers to 0
 	memset(state.reg, 0, (sizeof(int) * NUMREGS));
 	
 	int halted = 0;

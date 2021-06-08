@@ -71,7 +71,7 @@ int main(int argc, char *argv[]){
 		}
 		
 		//max label char is 6 and must start with letter
-		if (strlen(label) > 6 || !isalpha(label[0]) ) {
+		if (strlen(label) > 6 || !isalpha(label[0])) {
 			printf("error: invalid label name: %s\n", label);
 			exit(1);
 		}
@@ -106,7 +106,7 @@ int main(int argc, char *argv[]){
 		//R-Type
 		if (!strcmp(opcode, "add") || !strcmp(opcode, "nor")) {
 			if (!(isNumber(arg0) && isNumber(arg1) && isNumber(arg2))) {
-				printf("error: invalid argument of R-Type: line %d.\n",idx);	
+				printf("error: invalid argument of R-Type: line %d.\n",idx+1);	
 				exit(1);
 			}
 				
@@ -116,7 +116,7 @@ int main(int argc, char *argv[]){
 				op_code = OP_NOR;
 
 			regA = atoi(arg0) << 19; //push arg0 to bit 21-19 (regA)
-			regB = atoi(arg1) << 16; //push arg0 to bit 18-16 (regB)
+			regB = atoi(arg1) << 16; //push arg1 to bit 18-16 (regB)
 			offset = atoi(arg2);     //dest reg
 				
 			mach_code = regA | regB | offset;
@@ -125,7 +125,7 @@ int main(int argc, char *argv[]){
 		//I-Type
 		else if (!strcmp(opcode, "lw") || !strcmp(opcode, "sw") || !strcmp(opcode, "beq")) {
 			if (!(isNumber(arg0) && isNumber(arg1)) || !strcmp(arg2,"")) {
-				printf("error: invalid argument of I-Type: line %d.\n",idx);	
+				printf("error: invalid argument of I-Type: line %d.\n",idx+1);	
 				exit(1);
 			}
 				
@@ -137,21 +137,21 @@ int main(int argc, char *argv[]){
 				op_code = OP_BEQ;
 					
 			regA = atoi(arg0) << 19; //push arg0 to bit 21-19 (regA)
-			regB = atoi(arg1) << 16; //push arg0 to bit 18-16 (regB)	
+			regB = atoi(arg1) << 16; //push arg1 to bit 18-16 (regB)	
 				
 			//numeric address for lw,sw
 			if(isNumber(arg2)){
 				offset = atoi(arg2);
 				//check offset range
 				if (offset < -32768 || offset > 32767) {
-					printf("error: invalid offsetField range\n");
+					printf("error: invalid offsetField range: line %d.\n",idx+1);
 					exit(1);
 				}
 			}
 			//arg2 is not number (jump label for beq)
 			else{
 				if ((offset = findLabel(arg2,line_cnt)) == -1){
-					printf("error: label not found for beq:%s : line %d\n",arg2,idx);
+					printf("error: label not found for %s:%s : line %d\n",opcode, arg2,idx+1);
 					exit(1);
 				}
 				if (op_code == OP_BEQ)
@@ -169,13 +169,13 @@ int main(int argc, char *argv[]){
 			//J-Type
 		else if (!strcmp(opcode, "jalr")) {
 			if (!(isNumber(arg0) && isNumber(arg1))) {
-				printf("error: invalid argument of J-Type: line %d.\n",idx);	
+				printf("error: invalid argument of J-Type: line %d.\n",idx+1);	
 				exit(1);
 			}
 					
 			op_code = OP_JALR;
 			regA = atoi(arg0) << 19; //push arg0 to bit 21-19 (regA)
-			regB = atoi(arg1) << 16; //push arg0 to bit 18-16 (regB)	
+			regB = atoi(arg1) << 16; //push arg1 to bit 18-16 (regB)	
 					
 			mach_code = regA | regB;
 		}
@@ -191,7 +191,7 @@ int main(int argc, char *argv[]){
 		//.fill
 		else if (!strcmp(opcode, ".fill")) {
 			if(!strcmp(arg0,"")){
-				printf("error: invalid argument of O-Type: line %d.\n",idx);	
+				printf("error: invalid argument of .fill: line %d.\n",idx+1);	
 				exit(1);
 			}
 				
@@ -200,7 +200,7 @@ int main(int argc, char *argv[]){
 					
 			else{
 				if ((mach_code = findLabel(arg0,line_cnt)) == -1){
-					printf("error: label not found for .fill:%s\n",arg0);
+					printf("error: label not found for .fill:%s: line: %d.\n",arg0,idx+1);
 					exit(1);
 				}
 			}
@@ -208,7 +208,7 @@ int main(int argc, char *argv[]){
 			
 		//unknown instruction
 		else{
-			printf("error: unknown instruction: %s\n",opcode);
+			printf("error: unknown instruction: %s: line: %d.\n",opcode,idx+1);
 			exit(1);
 		}
 		
@@ -223,6 +223,7 @@ int main(int argc, char *argv[]){
 			fprintf(outFilePtr, "%d\n", memory[i]);
 	}
 	
+
 	exit(0);
 }
 
