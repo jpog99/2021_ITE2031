@@ -142,11 +142,6 @@ int main(int argc, char *argv[]){
 			//numeric address for lw,sw
 			if(isNumber(arg2)){
 				offset = atoi(arg2);
-				//check offset range
-				if (offset < -32768 || offset > 32767) {
-					printf("error: invalid offsetField range: line %d.\n",idx+1);
-					exit(1);
-				}
 			}
 			//arg2 is not number (jump label for beq)
 			else{
@@ -154,9 +149,17 @@ int main(int argc, char *argv[]){
 					printf("error: label not found for %s:%s : line %d\n",opcode, arg2,idx+1);
 					exit(1);
 				}
+				//since beq jumps to labelAddr = PC+1+offset
+				//hence beq has actual offset = labelAddr-PC-1
 				if (op_code == OP_BEQ)
-					offset -= (idx+1);
-				}
+					offset = offset-idx-1;
+			}
+			
+			//check offset range
+			if (offset < -32768 || offset > 32767) {
+				printf("error: invalid offsetField range: line %d.\n",idx+1);
+				exit(1);
+			}
 			
 			//take last 16 bits for offset
 			if (op_code == OP_BEQ)
@@ -166,7 +169,7 @@ int main(int argc, char *argv[]){
 		}
 
 				
-			//J-Type
+		//J-Type
 		else if (!strcmp(opcode, "jalr")) {
 			if (!(isNumber(arg0) && isNumber(arg1))) {
 				printf("error: invalid argument of J-Type: line %d.\n",idx+1);	
@@ -180,7 +183,7 @@ int main(int argc, char *argv[]){
 			mach_code = regA | regB;
 		}
 			
-			//O-Type
+		//O-Type
 		else if (!strcmp(opcode, "halt") || !strcmp(opcode, "noop")) {
 			if (!strcmp(opcode, "halt")) 
 				op_code = OP_HALT;

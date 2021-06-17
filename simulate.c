@@ -94,14 +94,14 @@ int main(int argc, char *argv[]){
 			case 4:
 				//If the contents of regA and regB are the same, then branch to the address PC+1+offsetField.
 				if(state.reg[regA] == state.reg[regB])
-					state.pc = state.pc+convertNum(offset);
+					state.pc = state.pc+convertNum(offset);  //the leftover +1 will be incremented by state.pc++ later (line 125) 
 				break;
 			
 			case 5:
 				//First store PC+1 into regB, where PC is the address of this jalr instruction.
 				state.reg[regB] = state.pc + 1;
 				//Then branch to the address contained in regA.
-				state.pc = state.reg[regA] -1;
+				state.pc = state.reg[regA] -1;  //minus one because state.pc will be incremented again later by state.pc++ (line125)
 				break;
 				
 			case 6:
@@ -158,8 +158,8 @@ void printState(stateType *statePtr){
 int convertNum(int num)
 {
 	/* convert a 16-bit number into a 32-bit Linux integer */
-	if (num & (1<<15) ) {
-		num -= (1<<16);
+	if (num & (1<<15) ) {   //get the sign bit
+		num -= (1<<16);  //if sign bit = 1, sign extend
 	}
 	return(num);
 }
